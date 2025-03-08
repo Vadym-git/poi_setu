@@ -1,0 +1,25 @@
+# Node.js dependencies
+/node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Temporary files
+*.swp
+*.bak
+
+# macOS
+.DS_Store
+
+# IDEs and editors
+.idea/
+.vscode/
+
+# npm debug log
+npm-debug.log*
+
+# Operating system files
+Thumbs.db

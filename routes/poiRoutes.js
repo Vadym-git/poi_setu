@@ -1,0 +1,90 @@
+const Placemark = require('../models/placemark'); // Import the Placemark model
+
+const basePath = "/placemarks"; // Define the base path for the routes
+
+module.exports = (server) => {
+    // Route to get all placemarks (GET)
+    server.route({
+        method: 'GET',
+        path: basePath,
+        handler: async (request, h) => {
+            try {
+                // Fetch all placemarks from the database
+                const products = await Placemark.find();
+                // Return the fetched products with a 200 OK status
+                return h.response(products).code(200);
+            } catch (err) {
+                // Handle errors if any occur during the database query
+                return h.response({ message: 'Error fetching products' }).code(500);
+            }
+        }
+    });
+
+    // Route to create a new placemark (POST)
+    server.route({
+        method: 'POST',
+        path: basePath,
+        handler: async (request, h) => {
+            try {
+                // Extract name, category, and description from the request payload
+                const { name, category, description } = request.payload;
+                // Create a new Placemark instance with the provided data
+                const newProduct = new Placemark({ name, category, description });
+                // Save the new placemark to the database
+                await newProduct.save();
+                // Return the created product with a 201 Created status
+                return h.response(newProduct).code(201);
+            } catch (err) {
+                // Handle errors during product creation
+                return h.response({ message: 'Error creating product' }).code(500);
+            }
+        }
+    });
+
+    // Route to update an existing placemark (PUT)
+    server.route({
+        method: 'PUT',
+        path: basePath + "/{id}",
+        handler: async (request, h) => {
+            try {
+                // Get the ID from the request params and the updated data from the payload
+                const { id } = request.params;
+                const { name, category, description } = request.payload;
+                // Find and update the placemark by its ID
+                const updatedProduct = await Placemark.findByIdAndUpdate(id, { name, category, description }, { new: true });
+                if (!updatedProduct) {
+                    // Return 404 if the placemark was not found
+                    return h.response({ message: 'Placemark not found' }).code(404);
+                }
+                // Return the updated product with a 200 OK status
+                return h.response(updatedProduct).code(200);
+            } catch (err) {
+                // Handle errors during product update
+                return h.response({ message: 'Error updating product' }).code(500);
+            }
+        }
+    });
+
+    // Route to delete a placemark (DELETE)
+    server.route({
+        method: 'DELETE',
+        path: basePath + "/{id}",
+        handler: async (request, h) => {
+            try {
+                // Get the ID from the request params
+                const { id } = request.params;
+                // Find and delete the placemark by its ID
+                const deletedProduct = await Placemark.findByIdAndDelete(id);
+                if (!deletedProduct) {
+                    // Return 404 if the placemark was not found
+                    return h.response({ message: 'Placemark not found' }).code(404);
+                }
+                // Return a success message with a 200 OK status
+                return h.response({ message: 'Placemark deleted' }).code(200);
+            } catch (err) {
+                // Handle errors during product deletion
+                return h.response({ message: 'Error deleting product' }).code(500);
+            }
+        }
+    });
+};
