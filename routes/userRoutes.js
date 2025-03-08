@@ -1,21 +1,21 @@
-const Placemark = require('../models/placemark'); // Import the Placemark model
+const User = require('../models/user'); // Import the User model
 
-const basePath = "/placemarks"; // Define the base path for the routes
+const basePath = "/users"; // Define the base path for the routes
 
 module.exports = (server) => {
-    // Route to get all placemarks (GET)
+    // Route to get all users (GET)
     server.route({
         method: 'GET',
         path: basePath,
         handler: async (request, h) => {
             try {
-                // Fetch all placemarks from the database
-                const products = await Placemark.find();
+                // Fetch all users from the database
+                const products = await User.find();
                 // Return the fetched products with a 200 OK status
                 return h.response(products).code(200);
             } catch (err) {
                 // Handle errors if any occur during the database query
-                return h.response({ message: 'Error fetching products' }).code(500);
+                return h.response({ message: 'Error fetching user' }).code(500);
             }
         }
     });
@@ -27,13 +27,13 @@ module.exports = (server) => {
         handler: async (request, h) => {
             try {
                 // Extract name, category, and description from the request payload
-                const { name, category, description } = request.payload;
-                // Create a new Placemark instance with the provided data
-                const newProduct = new Placemark({ name, category, description });
+                const { name, secondName, password } = request.payload;
+                // Create a new User instance with the provided data
+                const newUser = new User({ name, secondName, password });
                 // Save the new placemark to the database
-                await newProduct.save();
+                await newUser.save();
                 // Return the created product with a 201 Created status
-                return h.response(newProduct).code(201);
+                return h.response(newUser).code(201);
             } catch (err) {
                 // Handle errors during product creation
                 return h.response({ message: 'Error creating product' }).code(500);
@@ -49,15 +49,15 @@ module.exports = (server) => {
             try {
                 // Get the ID from the request params and the updated data from the payload
                 const { id } = request.params;
-                const { name, category, description } = request.payload;
+                const { name, secondName, password } = request.payload;
                 // Find and update the placemark by its ID
-                const updatedProduct = await Placemark.findByIdAndUpdate(id, { name, category, description }, { new: true });
-                if (!updatedProduct) {
+                const updatedUser = await User.findByIdAndUpdate(id, { name, secondName, password }, { new: true });
+                if (!updatedUser) {
                     // Return 404 if the placemark was not found
-                    return h.response({ message: 'Placemark not found' }).code(404);
+                    return h.response({ message: 'User not found' }).code(404);
                 }
                 // Return the updated product with a 200 OK status
-                return h.response(updatedProduct).code(200);
+                return h.response(updatedUser).code(200);
             } catch (err) {
                 // Handle errors during product update
                 return h.response({ message: 'Error updating product' }).code(500);
@@ -74,13 +74,13 @@ module.exports = (server) => {
                 // Get the ID from the request params
                 const { id } = request.params;
                 // Find and delete the placemark by its ID
-                const deletedProduct = await Placemark.findByIdAndDelete(id);
-                if (!deletedProduct) {
+                const deletedUser = await User.findByIdAndDelete(id);
+                if (!deletedUser) {
                     // Return 404 if the placemark was not found
-                    return h.response({ message: 'Placemark not found' }).code(404);
+                    return h.response({ message: 'User not found' }).code(404);
                 }
                 // Return a success message with a 200 OK status
-                return h.response({ message: 'Placemark deleted' }).code(200);
+                return h.response({ message: 'User deleted' }).code(200);
             } catch (err) {
                 // Handle errors during product deletion
                 return h.response({ message: 'Error deleting product' }).code(500);

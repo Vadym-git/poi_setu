@@ -2,6 +2,8 @@
 const Hapi = require('@hapi/hapi');
 const connectDB = require('./db');
 const placemarkRoutes = require('./routes/poiRoutes');
+const usersRoutes = require('./routes/userRoutes');
+const userAuthRoutes = require('./routes/authUser');
 
 // Function to initialize the server
 const init = async () => {
@@ -17,6 +19,8 @@ const init = async () => {
 
     // Register the routes for placemarks
     placemarkRoutes(server);
+    userAuthRoutes(server);
+    //usersRoutes(server);
 
     // Start the server and log the URL once it's running
     await server.start();
