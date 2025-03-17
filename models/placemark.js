@@ -2,22 +2,22 @@ const mongoose = require('mongoose');
 
 // Type Schema (stores different placemark types)
 const typeSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true }
-});
+    name: { type: String, required: true, unique: true, trim: true, lowercase: true }
+}, { timestamps: true });
 
-const Type = mongoose.model('Type', typeSchema);
+const PoiType = mongoose.model('PoiType', typeSchema);
 
 // Category Schema
 const categorySchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true }
-});
+    name: { type: String, required: true, unique: true, trim: true, lowercase: true }
+}, { timestamps: true });
 
 const Category = mongoose.model('Category', categorySchema);
 
 // Placemark Schema
 const placemarkSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    type: { type: mongoose.Schema.Types.ObjectId, ref: 'Type', required: true }, // Reference to Type
+    name: { type: String, required: true, trim: true, lowercase: true },
+    poitype: { type: mongoose.Schema.Types.ObjectId, ref: 'Type', required: true }, // Reference to Type
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }], // Reference to Categories
     description: { type: String },
     location: {
@@ -39,4 +39,4 @@ const Placemark = mongoose.model('Placemark', placemarkSchema);
 // Add GeoJSON index for location
 placemarkSchema.index({ location: '2dsphere' });
 
-module.exports = { Placemark, Type, Category };
+module.exports = { Placemark, PoiType, Category };
