@@ -1,4 +1,9 @@
-import mongoose from 'mongoose';  // Use import instead of require
+import Joi from 'joi';
+import mongoose from 'mongoose';
+
+const userType = new mongoose.Schema({
+    typeName: {type: String, required: true, unique: true}
+}, { timestamps: true });
 
 const userSchema = new mongoose.Schema({
     login: { 
@@ -11,10 +16,11 @@ const userSchema = new mongoose.Schema({
     secondName: { type: String, required: false },
     password: { type: String, required: true },
     comment: { type: String },
-    createdAt: { type: Date, default: Date.now },
-});
+    userType: { type: mongoose.Schema.Types.ObjectId, ref: "userType", required: false } // if no userType, user has min permitions
+}, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
+const UserType = mongoose.model('UserType', userType);
 
 // Named export
-export { User };
+export { User, UserType };

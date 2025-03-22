@@ -6,14 +6,19 @@ const { options } = Joi;
 
 const placemarkRoutes = (server) => {
 
-// =========================================== Placemarks ===========================================
+    // =========================================== Placemarks ===========================================
 
-const basePath = "/placemarks"; // Define the base path for the routes
+    const basePath = "/placemarks"; // Define the base path for the routes
 
     // Route to get all placemarks (GET)
     server.route({
         method: 'GET',
         path: basePath,
+        options: {
+            tags: ["api"],
+            description: "Get all POI objects",
+            notes: "Returns detailed data"
+        },
         handler: async (request, h) => {
             try {
                 // Fetch all placemarks from the database
@@ -23,7 +28,7 @@ const basePath = "/placemarks"; // Define the base path for the routes
                 console.error('Error fetching placemarks:', err);
                 return h.response({ message: 'Error fetching placemarks' }).code(500);
             }
-        }
+        },
     });
 
 
