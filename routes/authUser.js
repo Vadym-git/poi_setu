@@ -1,11 +1,12 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const Joi = require('joi');
-const User = require('../models/user'); // User model
+import bcrypt from 'bcryptjs';       
+import jwt from 'jsonwebtoken';  
+import Joi from 'joi';          
+import { User } from '../models/user.js'; 
 
-const basePath = "/auth"; // Base path for authentication
+const userAuthRoutes = (server) => {
 
-module.exports = (server) => {
+    const basePath = "/auth"; // Base path for authentication
+
     // Joi schema for user signup
     const signupSchema = Joi.object({
         login: Joi.string().email().required(),
@@ -51,7 +52,7 @@ module.exports = (server) => {
                 return h.response({ message: 'Login successful' })
                     .state('auth_token', token, {
                         httpOnly: true,   // JS doesn't have access to a cookie
-                        secure: false,    // ❗ Dont miss change to true in prodaction: `true` (HTTPS)
+                        secure: false,    // ❗ Change to true in production (HTTPS)
                         sameSite: 'Lax',  // CSRF protection
                         path: '/'         // Cookie allows for all the routes
                     })
@@ -110,3 +111,5 @@ module.exports = (server) => {
         }
     });
 };
+
+export default userAuthRoutes;

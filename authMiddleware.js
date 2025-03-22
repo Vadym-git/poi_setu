@@ -1,17 +1,19 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-module.exports = (request, h) => {
+const authMiddleware = (request, h) => {
     try {
-        const token = request.state.auth_token; // Getting cookie
+        const token = request.state.auth_token; // Отримання токена з cookie
         if (!token) {
             return h.response({ message: 'Unauthorized' }).code(401).takeover();
         }
 
-        // Decoding JWT
+        // Декодування JWT
         const decoded = jwt.verify(token, 'your_jwt_secret');
-        request.user = decoded; // Add user to request
+        request.user = decoded; // Додаємо user до request
         return h.continue;
     } catch (err) {
         return h.response({ message: 'Invalid token' }).code(401).takeover();
     }
 };
+
+export default authMiddleware;

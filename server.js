@@ -1,17 +1,16 @@
 // Import necessary modules
-const Hapi = require('@hapi/hapi');
-const connectDB = require('./db');
-const placemarkRoutes = require('./routes/poiRoutes');
-const usersRoutes = require('./routes/userRoutes');
-const userAuthRoutes = require('./routes/authUser');
+import Hapi from "@hapi/hapi";
+import connectDB from "./db.js";
+import placemarkRoutes from "./routes/poiRoutes.js";
+import usersRoutes from "./routes/userRoutes.js";
+import userAuthRoutes from "./routes/authUser.js";
 
 // Function to initialize the server
 const init = async () => {
-
     // Create a new Hapi server instance with specified port and host
     const server = Hapi.server({
         port: 5000,  // Port number the server will listen on
-        host: 'localhost'  // Host to bind the server to
+        host: "localhost"  // Host to bind the server to
     });
 
     // Connect to MongoDB database
@@ -28,7 +27,7 @@ const init = async () => {
 };
 
 // Handle any unhandled promise rejections (e.g., database errors)
-process.on('unhandledRejection', (err) => {
+process.on("unhandledRejection", (err) => {
     console.log(err);  // Log the error
     process.exit(1);  // Exit the process with a non-zero status code
 });

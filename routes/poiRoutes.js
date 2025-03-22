@@ -1,13 +1,14 @@
-const { Placemark, Category, PoiType } = require('../models/placemark'); // Import the Placemark model
-const authMiddleware = require('../authMiddleware');
-const { options } = require('joi');
+import { Placemark, Category, PoiType } from '../models/placemark.js'; // Import the Placemark model
+import authMiddleware from '../authMiddleware.js';
+import Joi from 'joi';
+const { options } = Joi;
 
+
+const placemarkRoutes = (server) => {
 
 // =========================================== Placemarks ===========================================
 
 const basePath = "/placemarks"; // Define the base path for the routes
-
-module.exports = (server) => {
 
     // Route to get all placemarks (GET)
     server.route({
@@ -244,6 +245,6 @@ module.exports = (server) => {
         }
     });
 
-
-
 };
+
+export default placemarkRoutes;

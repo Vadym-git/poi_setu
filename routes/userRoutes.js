@@ -1,8 +1,8 @@
-const User = require('../models/user'); // Import the User model
+import { User } from '../models/user.js'; // Import the User model
+
+const usersRoutes = (server) => {
 
 const basePath = "/users"; // Define the base path for the routes
-
-module.exports = (server) => {
     // Route to get all users (GET)
     server.route({
         method: 'GET',
@@ -88,3 +88,5 @@ module.exports = (server) => {
         }
     });
 };
+
+export default usersRoutes;
