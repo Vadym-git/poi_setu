@@ -1,55 +1,118 @@
-(async () => {
-    const { expect } = (await import('chai')).default;
-    const { Category } = await import('../models.mjs'); // Імпорт моделі Category
-    const mongoose = await import('mongoose');
-    const { MongoMemoryServer } = await import('mongodb-memory-server');
+import { assert } from 'chai';
+import mongoose from 'mongoose';
+import { Category, PoiType, Placemark } from '../models/placemark.js';
+import { suite, test, before, after } from 'mocha';
+const { MongoMemoryServer } = await import('mongodb-memory-server');
 
-    describe('Category Model Tests', function () {
-        let mongoServer;
+suite("POI API tests", () => {
 
-        before(async () => {
-            // Створюємо інстанс MongoMemoryServer
-            mongoServer = await MongoMemoryServer.create();
-            const uri = mongoServer.getUri();
-            
-            // Підключення до бази даних в пам'яті
-            await mongoose.default.connect(uri, {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
-            });
-        });
+    let mongoServer;
 
-        after(async () => {
-            // Очищення бази даних і закриття з'єднання після тесту
-            await mongoose.default.connection.dropDatabase();
-            await mongoose.default.connection.close();
-            await mongoServer.stop();
-        });
-
-        it('should create a new category', async () => {
-            const category = await Category.create({ name: 'Food' });
-
-            expect(category).to.have.property('name').that.equals('food');
-            expect(category).to.have.property('_id');
-        });
-
-        it('should get a category by name', async () => {
-            const category = await Category.create({ name: 'Travel' });
-
-            const foundCategory = await Category.findOne({ name: 'travel' });
-
-            expect(foundCategory).to.not.be.null;
-            expect(foundCategory.name).to.equal('travel');
-        });
-
-        it('should delete a category', async () => {
-            const category = await Category.create({ name: 'Sports' });
-
-            await Category.deleteOne({ _id: category._id });
-
-            const deletedCategory = await Category.findById(category._id);
-
-            expect(deletedCategory).to.be.null;
-        });
+    before(async () => {
+        mongoServer = await MongoMemoryServer.create();
+        const uri = mongoServer.getUri();
+        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
     });
-})();
+
+    after(async () => {
+        await mongoose.connection.dropDatabase();
+        await mongoose.connection.close();
+        await mongoServer.stop();
+    });
+
+    test("Creating and retrieving a Placemark", async () => {
+        // Create and save the Category and PoiType first
+        const testCategory = new Category({ name: "TestCategory" });
+        const testPoiType = new PoiType({ name: "TestTypePOI" });
+    
+        const savedCategory = await testCategory.save();
+        const savedPoiType = await testPoiType.save();
+    
+        // Now, create the Placemark and associate it with the saved Category and PoiType
+        const testPlacemark = new Placemark({
+            name: "TestPlacemark",
+            categories: [savedCategory._id],
+            description: "A description for the test placemark",
+            poitype: savedPoiType._id,
+            location: { type: 'Point', coordinates: [-0.1278, 51.5074] },  // Corrected location format (Longitude, Latitude)
+        });
+    
+        const savedPlacemark = await testPlacemark.save();
+    
+        // Retrieve the Placemark and check if it correctly references the Category and PoiType
+        const placemarkFromDB = await Placemark.findById(savedPlacemark._id)
+            .populate('categories')  // Populate the category field
+            .populate('poitype');     // Populate the POI type field
+    
+        // Check if the names match and relationships are correctly set
+        assert.equal(placemarkFromDB.name, "testplacemark");
+        assert.equal(placemarkFromDB.categories[0].name, "testcategory");
+        assert.equal(placemarkFromDB.poitype.name, "testtypepoi");
+    });
+    
+
+    test("Deleting a Placemark", async () => {
+        const testCategory = new Category({ name: `TestCategory${Date.now()}` });  // Ensure unique name
+        const testPoiType = new PoiType({ name: `TestTypePOI${Date.now()}` });     // Ensure unique name
+    
+        const savedCategory = await testCategory.save();
+        const savedPoiType = await testPoiType.save();
+    
+        const testPlacemark = new Placemark({
+            name: "TestPlacemarkToDelete",
+            categories: [savedCategory._id],
+            description: "A description for the test placemark",
+            poitype: savedPoiType._id,
+            location: { type: 'Point', coordinates: [-0.1278, 51.5074] },  // Corrected location format
+        });
+    
+        const savedPlacemark = await testPlacemark.save();
+        await Placemark.findByIdAndDelete(savedPlacemark._id);
+    
+        const placemarkFromDB = await Placemark.findById(savedPlacemark._id);
+        assert.isNull(placemarkFromDB);
+    });
+    
+
+    test("Unique validation for Category", async () => {
+        const testCategory1 = new Category({ name: "UniqueCategory" });
+        const testCategory2 = new Category({ name: "UniqueCategory" });
+
+        await testCategory1.save();
+
+        try {
+            await testCategory2.save();
+            assert.fail("Duplicate category should not be allowed");
+        } catch (err) {
+            assert.include(err.message, "duplicate key error collection");
+        }
+    });
+
+    test("Unique validation for PoiType", async () => {
+        const testPoiType1 = new PoiType({ name: "UniquePoiType" });
+        const testPoiType2 = new PoiType({ name: "UniquePoiType" });
+
+        await testPoiType1.save();
+
+        try {
+            await testPoiType2.save();
+            assert.fail("Duplicate POI type should not be allowed");
+        } catch (err) {
+            assert.include(err.message, "duplicate key error collection");
+        }
+    });
+
+    test("Creating a Placemark without required fields", async () => {
+        const testPlacemark = new Placemark({
+            description: "A description without a name or category",
+            location: { lat: 51.5074, lon: -0.1278 },
+        });
+
+        try {
+            await testPlacemark.save();
+            assert.fail("Placemark should not be saved without required fields");
+        } catch (err) {
+            assert.include(err.message, "Placemark validation failed");
+        }
+    });
+});
