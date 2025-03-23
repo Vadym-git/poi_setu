@@ -9,10 +9,13 @@ import HapiSwagger from 'hapi-swagger';  // Plugin to generate Swagger documenta
 
 
 const init = async () => {
+
+    const port = process.env.PORT || 8000;
+
     // Create a new Hapi server instance with specified port and host
     const server = Hapi.server({
-        port: 5000,  // Port number the server will listen on
-        host: "localhost"  // Host to bind the server to
+        port: port,  // Port number the server will listen on
+        host: "0.0.0.0"  // Host to bind the server to
     });
 
     // Connect to MongoDB database
@@ -30,10 +33,10 @@ const init = async () => {
                     description: 'API Documentation for Placemark Service',
                     version: '1.0.0',
                 },
-                grouping: 'tags',  // Групуємо ендпоінти за тегами
-                tags: ['Placemark', 'User', 'Auth'],  // Теги для маршрутов
-                jsonPath: '/swagger.json',  // Шлях для JSON документації
-                documentationPath: '/documentation',  // Шлях для UI Swagger
+                grouping: 'tags',
+                tags: ['Placemark', 'User', 'Auth'],
+                jsonPath: '/swagger.json',
+                documentationPath: '/documentation',
                 validator: true
             }
         }
