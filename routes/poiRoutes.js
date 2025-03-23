@@ -31,6 +31,27 @@ const placemarkRoutes = (server) => {
         },
     });
 
+    // GET single placemark GET
+    server.route({
+        method: 'GET',
+        path: `${basePath}/{id}`,
+        handler: async (request, h) => {
+            try {
+                const { id } = request.params;
+                const product = await Placemark.findById(id);
+    
+                if (!product) {
+                    return h.response({ message: 'Placemark not found' }).code(404);
+                }
+    
+                return h.response(product).code(200);
+            } catch (err) {
+                return h.response({ message: 'Error retrieving product' }).code(500);
+            }
+        }
+    });
+    
+
 
     // Route to create a new placemark (POST)
     server.route({
@@ -39,9 +60,9 @@ const placemarkRoutes = (server) => {
         handler: async (request, h) => {
             try {
                 // Extract name, category, and description from the request payload
-                const { name, categories, description, poitype, location } = request.payload;
+                const { name, categories, description, poitype, location, imageUrl } = request.payload;
                 // Create a new Placemark instance with the provided data
-                const newProduct = new Placemark({ name, categories, description, poitype, location });
+                const newProduct = new Placemark({ name, categories, description, poitype, location, imageUrl });
                 // Save the new placemark to the database
                 await newProduct.save();
                 // Return the created product with a 201 Created status
@@ -64,9 +85,9 @@ const placemarkRoutes = (server) => {
             try {
                 // Get the ID from the request params and the updated data from the payload
                 const { id } = request.params;
-                const { name, categories, description, poitype, location } = request.payload;
+                const { name, categories, description, poitype, location, imageUrl } = request.payload;
                 // Find and update the placemark by its ID
-                const updatedProduct = await Placemark.findByIdAndUpdate(id, { name, categories, description, poitype, location }, { new: true });
+                const updatedProduct = await Placemark.findByIdAndUpdate(id, { name, categories, description, poitype, location, imageUrl }, { new: true });
                 if (!updatedProduct) {
                     // Return 404 if the placemark was not found
                     return h.response({ message: 'Placemark not found' }).code(404);

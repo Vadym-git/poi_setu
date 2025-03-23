@@ -38,7 +38,8 @@ const placemarkSchema = new mongoose.Schema(
                 type: [Number], // Array: [longitude, latitude]
                 required: true
             }
-        }
+        },
+        imageUrl: { type: String }
     },
     { timestamps: true }
 );

@@ -1,18 +1,23 @@
 import { User } from '../models/user.js'; // Import the User model
+import authMiddleware from '../authMiddleware.js';
 
 const usersRoutes = (server) => {
 
-const basePath = "/users"; // Define the base path for the routes
+    const basePath = "/users"; // Define the base path for the routes
+
     // Route to get all users (GET)
     server.route({
         method: 'GET',
         path: basePath,
+        options: {
+            pre: [{ method: authMiddleware }]
+        },
         handler: async (request, h) => {
             try {
                 // Fetch all users from the database
-                const products = await User.find();
-                // Return the fetched products with a 200 OK status
-                return h.response(products).code(200);
+                const users = await User.find();
+                // Return the fetched users with a 200 OK status
+                return h.response(users).code(200);
             } catch (err) {
                 // Handle errors if any occur during the database query
                 return h.response({ message: 'Error fetching user' }).code(500);
@@ -20,23 +25,26 @@ const basePath = "/users"; // Define the base path for the routes
         }
     });
 
-    // Route to create a new placemark (POST)
+    // Route to create a new User (POST)
     server.route({
         method: 'POST',
         path: basePath,
+        options: {
+            pre: [{ method: authMiddleware }]
+        },
         handler: async (request, h) => {
             try {
                 // Extract name, category, and description from the request payload
                 const { name, secondName, password } = request.payload;
                 // Create a new User instance with the provided data
                 const newUser = new User({ name, secondName, password });
-                // Save the new placemark to the database
+                // Save the new user to the database
                 await newUser.save();
-                // Return the created product with a 201 Created status
+                // Return the created user with a 201 Created status
                 return h.response(newUser).code(201);
             } catch (err) {
-                // Handle errors during product creation
-                return h.response({ message: 'Error creating product' }).code(500);
+                // Handle errors during user creation
+                return h.response({ message: 'Error creating user' }).code(500);
             }
         }
     });
@@ -45,6 +53,9 @@ const basePath = "/users"; // Define the base path for the routes
     server.route({
         method: 'PUT',
         path: `${basePath}/{id}`,
+        options: {
+            pre: [{ method: authMiddleware }]
+        },
         handler: async (request, h) => {
             try {
                 // Get the ID from the request params and the updated data from the payload
@@ -56,11 +67,11 @@ const basePath = "/users"; // Define the base path for the routes
                     // Return 404 if the placemark was not found
                     return h.response({ message: 'User not found' }).code(404);
                 }
-                // Return the updated product with a 200 OK status
+                // Return the updated user with a 200 OK status
                 return h.response(updatedUser).code(200);
             } catch (err) {
-                // Handle errors during product update
-                return h.response({ message: 'Error updating product' }).code(500);
+                // Handle errors during user update
+                return h.response({ message: 'Error updating users' }).code(500);
             }
         }
     });
@@ -69,6 +80,9 @@ const basePath = "/users"; // Define the base path for the routes
     server.route({
         method: 'DELETE',
         path: `${basePath}/{id}`,
+        options: {
+            pre: [{ method: authMiddleware }]
+        },
         handler: async (request, h) => {
             try {
                 // Get the ID from the request params
@@ -82,13 +96,13 @@ const basePath = "/users"; // Define the base path for the routes
                 // Return a success message with a 200 OK status
                 return h.response({ message: 'User deleted' }).code(200);
             } catch (err) {
-                // Handle errors during product deletion
-                return h.response({ message: 'Error deleting product' }).code(500);
+                // Handle errors during user deletion
+                return h.response({ message: 'Error deleting user' }).code(500);
             }
         }
     });
 
-    
+
 
 
 };
