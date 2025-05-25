@@ -6,10 +6,10 @@ const userType = new mongoose.Schema({
 }, { timestamps: true });
 
 const userSchema = new mongoose.Schema({
-    login: { 
-        type: String, 
-        required: true, 
-        unique: true, 
+    email: {
+        type: String,
+        required: true,
+        unique: true,
         match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,  // Regular expression for email
     },
     name: { type: String, required: false },

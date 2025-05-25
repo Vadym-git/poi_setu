@@ -1,62 +1,89 @@
 import Hapi from "@hapi/hapi";
+import Inert from "@hapi/inert";
+import Vision from "@hapi/vision";  // Додай це!
+import path from "path";
+import { fileURLToPath } from "url";
+
 import connectDB from "./db.js";
 import placemarkRoutes from "./routes/poiRoutes.js";
 import usersRoutes from "./routes/userRoutes.js";
 import userAuthRoutes from "./routes/authUser.js";
-import Vision from '@hapi/vision';  // Plugin for rendering views (if you need it)
-import Inert from '@hapi/inert';  // Plugin to handle static files
-import HapiSwagger from 'hapi-swagger';  // Plugin to generate Swagger documentation
+import HapiSwagger from "hapi-swagger";
+import setupGoogleAuth from "./routes/authGoogle.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const init = async () => {
+  const port = process.env.PORT || 8000;
 
-    const port = process.env.PORT || 8000;
+  const server = Hapi.server({
+    port: port,
+    host: "0.0.0.0",
+    routes: {
+      cors: {
+        origin: ["*"], // Якщо треба дозволити CORS (на розробці наприклад)
+      },
+    },
+  });
 
-    // Create a new Hapi server instance with specified port and host
-    const server = Hapi.server({
-        port: port,  // Port number the server will listen on
-        host: "0.0.0.0"  // Host to bind the server to
-    });
+  connectDB();
 
-    // Connect to MongoDB database
-    connectDB();
+  // Спочатку реєструємо Inert та Vision, а потім HapiSwagger
+  await server.register([
+    Inert,
+    Vision,  // Додай Vision сюди
+    {
+      plugin: HapiSwagger,
+      options: {
+        info: {
+          title: "Placemark API",
+          description: "API Documentation for Placemark Service",
+          version: "1.0.0",
+        },
+        grouping: "tags",
+        tags: ["Placemark", "User", "Auth"],
+        jsonPath: "/swagger.json",
+        documentationPath: "/documentation",
+        validator: true,
+      },
+    },
+  ]);
 
-    // Register Inert, Vision (if needed), and HapiSwagger plugins
-    await server.register([
-        Inert,  // Статичні файли
-        Vision, // Якщо не використовуєте шаблони, видаліть
-        {
-            plugin: HapiSwagger,
-            options: {
-                info: {
-                    title: 'Placemark API',
-                    description: 'API Documentation for Placemark Service',
-                    version: '1.0.0',
-                },
-                grouping: 'tags',
-                tags: ['Placemark', 'User', 'Auth'],
-                jsonPath: '/swagger.json',
-                documentationPath: '/documentation',
-                validator: true
-            }
-        }
-    ]);
+  // Реєстрація API маршрутів
+  placemarkRoutes(server);
+  userAuthRoutes(server);
+  usersRoutes(server);
+  await setupGoogleAuth(server);
 
-    // Register the routes for placemarks, users, and user authentication
-    placemarkRoutes(server);
-    userAuthRoutes(server);
-    usersRoutes(server);
+  // Обробка фронтенду (React static files)
+  server.route({
+    method: "GET",
+    path: "/{param*}",
+    handler: {
+      directory: {
+        path: path.join(__dirname, "client_build"), // ТУТ буде твій React build
+        index: ["index.html"],
+      },
+    },
+  });
 
-    // Start the server and log the URL once it's running
-    await server.start();
-    console.log(`✅ Server running on ${server.info.uri}`);
+  // Якщо маршрут не знайдено — віддаємо index.html для React Router
+  server.ext("onPreResponse", (request, h) => {
+    const response = request.response;
+    if (response.isBoom && response.output.statusCode === 404) {
+      return h.file(path.join(__dirname, "client_build", "index.html"));
+    }
+    return h.continue;
+  });
+
+  await server.start();
+  console.log(`✅ Server running on ${server.info.uri}`);
 };
 
-// Handle any unhandled promise rejections (e.g., database errors)
 process.on("unhandledRejection", (err) => {
-    console.log(err);  // Log the error
-    process.exit(1);  // Exit the process with a non-zero status code
+  console.log(err);
+  process.exit(1);
 });
 
-// Call the function to initialize and start the server
 init();

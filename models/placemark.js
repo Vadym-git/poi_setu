@@ -1,15 +1,5 @@
 import mongoose from "mongoose";
 
-// Type Schema (stores different placemark types)
-const typeSchema = new mongoose.Schema(
-    {
-        name: { type: String, required: true, unique: true, trim: true, lowercase: true }
-    },
-    { timestamps: true }
-);
-
-const PoiType = mongoose.model("PoiType", typeSchema);
-
 // Category Schema
 const categorySchema = new mongoose.Schema(
     {
@@ -24,8 +14,10 @@ const Category = mongoose.model("Category", categorySchema);
 const placemarkSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true, lowercase: true },
-        poitype: { type: mongoose.Schema.Types.ObjectId, ref: "PoiType", required: true }, // Reference to PoiType
         categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }], // Reference to Categories
+        title: { type: String },
+        address: { type: String },
+        openh: { type: String },
         description: { type: String },
         location: {
             type: {
@@ -39,7 +31,13 @@ const placemarkSchema = new mongoose.Schema(
                 required: true
             }
         },
-        imageUrl: { type: String }
+        images: [String],
+		views: [
+      {
+        date: { type: Date, required: true },
+        count: { type: Number, default: 1 },
+      },
+    ],
     },
     { timestamps: true }
 );
@@ -49,4 +47,4 @@ const Placemark = mongoose.model("Placemark", placemarkSchema);
 // Add GeoJSON index for location
 placemarkSchema.index({ location: "2dsphere" });
 
-export { Placemark, PoiType, Category };
+export { Placemark, Category };

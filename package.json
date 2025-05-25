@@ -5,16 +5,19 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/*.js --exit --timeout 5000"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@hapi/bell": "^13.1.0",
     "@hapi/hapi": "^21.4.0",
     "@hapi/inert": "^7.1.0",
     "@hapi/vision": "^7.0.3",
     "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
+    "handlebars": "^4.7.8",
     "hapi-swagger": "^17.3.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",

@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';       
-import jwt from 'jsonwebtoken';  
-import Joi from 'joi';          
-import { User } from '../models/user.js'; 
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import Joi from 'joi';
+import { User } from '../models/user.js';
 
 const userAuthRoutes = (server) => {
 
@@ -9,13 +9,13 @@ const userAuthRoutes = (server) => {
 
     // Joi schema for user signup
     const signupSchema = Joi.object({
-        login: Joi.string().email().required(),
+        email: Joi.string().email().required(),
         password: Joi.string().min(8).required()
     });
 
     // Joi schema for user login
     const loginSchema = Joi.object({
-        login: Joi.string().email().required(),
+        email: Joi.string().email().required(),
         password: Joi.string().min(8).required()
     });
 
@@ -23,6 +23,11 @@ const userAuthRoutes = (server) => {
     server.route({
         method: 'POST',
         path: `${basePath}/login`,
+        options: {
+            cors: {
+              origin: ['http://localhost:5173'],
+              credentials: true,
+          }},
         handler: async (request, h) => {
             try {
                 // Validate input
@@ -31,10 +36,10 @@ const userAuthRoutes = (server) => {
                     return h.response({ message: error.details[0].message }).code(400);
                 }
 
-                const { login, password } = request.payload;
+                const { email, password } = request.payload;
 
                 // Find user by email
-                const user = await User.findOne({ login });
+                const user = await User.findOne({ email });
                 if (!user) {
                     return h.response({ message: 'Invalid credentials' }).code(400);
                 }
@@ -64,9 +69,15 @@ const userAuthRoutes = (server) => {
         }
     });
 
+
     server.route({
         method: 'POST',
         path: '/auth/logout',
+		        options: {
+            cors: {
+              origin: ['http://localhost:5173'],
+              credentials: true,
+          }},
         handler: (request, h) => {
             return h.response({ message: 'Logged out successfully' })
                 .unstate('auth_token', { path: '/' })
@@ -79,6 +90,11 @@ const userAuthRoutes = (server) => {
     server.route({
         method: 'POST',
         path: `${basePath}/signup`,
+        options: {
+            cors: {
+              origin: ['http://localhost:5173'],
+              credentials: true,
+          }},
         handler: async (request, h) => {
             try {
                 // Validate data using Joi
@@ -87,10 +103,9 @@ const userAuthRoutes = (server) => {
                     return h.response({ message: error.details[0].message }).code(400);
                 }
 
-                const { login, password } = request.payload;
-
+                const { email, password } = request.payload;
                 // Check if user already exists
-                const existingUser = await User.findOne({ login });
+                const existingUser = await User.findOne({ email });
                 if (existingUser) {
                     return h.response({ message: 'User already exists' }).code(400);
                 }
@@ -99,7 +114,7 @@ const userAuthRoutes = (server) => {
                 const hashedPassword = await bcrypt.hash(password, 10);
 
                 // Create a new user
-                const newUser = new User({ login, password: hashedPassword });
+                const newUser = new User({ email, password: hashedPassword });
                 await newUser.save();
 
                 // Return a successful response
@@ -110,6 +125,37 @@ const userAuthRoutes = (server) => {
             }
         }
     });
+
+    server.route({
+  method: 'GET',
+  path: `${basePath}/me`,
+  options: {
+    cors: {
+      origin: ['http://localhost:5173'],
+      credentials: true,
+  }},
+  handler: async (request, h) => {
+    try {
+      const token = request.state.auth_token;
+
+      if (!token) {
+        return h.response({ isAuthenticated: false }).code(401);
+      }
+
+      const payload = jwt.verify(token, 'your_jwt_secret');
+      const user = await User.findById(payload.userId).select('-password');
+
+      if (!user) {
+        return h.response({ isAuthenticated: false }).code(401);
+      }
+
+      return h.response({ isAuthenticated: true, user }).code(200);
+    } catch (err) {
+      return h.response({ isAuthenticated: false }).code(401);
+    }
+  }
+});
+
 };
 
 export default userAuthRoutes;

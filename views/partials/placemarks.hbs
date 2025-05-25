@@ -1,0 +1,35 @@
+
+<h1>Placemarks</h1>
+<a href="/placemarks/new">Create New Placemark</a>
+
+<ul>
+  {{#each placemarks}}
+    <li>
+      <h2>
+        <a href="/placemarks/{{this._id}}">{{this.name}}</a>
+      </h2>
+      <p><strong>Description:</strong> {{this.description}}</p>
+      
+      <p><strong>Location:</strong> 
+        {{this.location.coordinates}}
+      </p>
+      
+      <p><strong>POI Type:</strong> {{this.poitype}}</p>
+      
+      <p><strong>Categories:</strong> 
+        {{#each this.categories}}
+          {{this}} 
+        {{/each}}
+      </p>
+
+      <p><strong>Created At:</strong> {{this.createdAt}}</p>
+      <p><strong>Last Updated:</strong> {{this.updatedAt}}</p>
+
+      <form action="/placemarks/{{this._id}}" method="POST" style="display:inline;">
+        <input type="hidden" name="_method" value="DELETE"/>
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>
+

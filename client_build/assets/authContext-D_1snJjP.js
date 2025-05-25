@@ -1,0 +1,1 @@
+import{a as t,o as r}from"./chunk-BAXFHI7N-Bm9KWlqI.js";const e=t.createContext({isLoggedIn:!1,setIsLoggedIn:()=>{}});function u({children:s}){const[o,n]=t.useState(!1);return r.jsx(e.Provider,{value:{isLoggedIn:o,setIsLoggedIn:n},children:s})}const g=()=>t.useContext(e);export{u as A,g as u};
